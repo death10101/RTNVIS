@@ -227,3 +227,9 @@ index.html
 Author
 ---------  Kinyanjui
 ---------- Cybersecurity | Networking | Visualization Engineering
+
+SCREENSHOTS
+
+<img width="1920" height="1080" alt="Screenshot From 2026-02-18 17-10-59" src="https://github.com/user-attachments/assets/c58344c3-a84b-49df-88af-b0162597f444" />
+<img width="1920" height="1080" alt="Screenshot From 2026-02-18 17-19-25" src="https://github.com/user-attachments/assets/75c8159b-287e-4d9a-a186-f1828021b0c6" />
+<img width="1920" height="1080" alt="Screenshot From 2026-02-18 17-11-07" src="https://github.com/user-attachments/assets/6437ae37-0c47-407d-9c9b-52f2544111d2" />
