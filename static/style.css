@@ -1,0 +1,137 @@
+/* General body styling */
+body {
+    margin: 0;
+    background: #121212;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+/* Globe container */
+#globeViz {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Make sure canvas is behind sidebar */
+}
+
+
+/* Sidebar styling */
+#sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100vh;
+    background: rgba(30, 30, 30, 0.95);
+    padding: 15px;
+    z-index: 10;
+    transition: width 0.3s, opacity 0.3s;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+}
+
+#sidebar h2 {
+    margin: 0 0 15px;
+    font-size: 20px;
+    color: #ffa500;
+}
+
+#toggleSidebar, #downloadBtn {
+    width: 100%;
+    padding: 10px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#toggleSidebar:hover, #downloadBtn:hover {
+    background: #555;
+}
+
+/* Controls styling */
+#controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#pauseBtn, #protocolFilter {
+    padding: 8px 12px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#pauseBtn:hover, #protocolFilter:hover {
+    background: #555;
+}
+
+/* Traffic entries */
+.traffic-entry {
+    border-bottom: 1px solid #444;
+    padding: 10px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.traffic-entry:last-child {
+    border-bottom: none;
+}
+
+/* Info box */
+#info {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 12px;
+    border-radius: 6px;
+    max-width: 320px;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 0 10px rgba(0,0,0,0.7);
+}
+
+/* Scrollbar styling for sidebar */
+#sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 4px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+/* Animate traffic entries */
+.traffic-entry {
+    transition: all 0.4s ease-out;
+}
+
+/* Optionally, smooth globe fade on update */
+#globeViz canvas {
+    transition: opacity 0.5s;
+}

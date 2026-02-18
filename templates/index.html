@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Network Traffic Visualization</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/three"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #121212; color: #fff; }
+        #globeViz { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+        #sidebar { width: 300px; position: absolute; top: 0; left: 0; bottom: 0; background: #1e1e1e; overflow-y: auto; padding: 10px; transition: width 0.3s; }
+        #controls { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; }
+        .traffic-entry { border-bottom: 1px solid #333; margin-bottom: 5px; padding-bottom: 5px; }
+        #info { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; max-width: 300px; }
+        button, select { margin: 5px 0; padding: 5px 10px; border: none; border-radius: 3px; background: #333; color: #fff; cursor: pointer; }
+        button:hover, select:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <button id="toggleSidebar">Collapse</button>
+        <h2>Traffic Summary</h2>
+        <button id="downloadBtn">Download CSV</button>
+        <div id="trafficList"></div>
+    </div>
+
+    <div id="controls">
+        <button id="pauseBtn">Pause</button>
+        <select id="protocolFilter">
+            <option value="all">All Protocols</option>
+            <option value="HTTP">HTTP</option>
+            <option value="HTTPS">HTTPS</option>
+        </select>
+    </div>
+
+    <div id="globeViz"></div>
+    <div id="info"></div>
+
+    <script>
+        const API_KEY = "secret_key_123";
+    
+        // Nairobi Coordinates
+        const NAIROBI = {
+            lat: -1.286389,
+            lng: 36.817223
+        };
+    
+        const globe = Globe()
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+            .backgroundColor('#121212')
+            .pointOfView({ lat: 5, lng: 20, altitude: 2 });
+    
+        globe(document.getElementById('globeViz'));
+    
+        // Enable smooth rotation
+        globe.controls().autoRotate = true;
+        globe.controls().autoRotateSpeed = 0.4;
+        globe.controls().enableZoom = false;
+        globe.controls().enablePan = false;
+    
+        let isPaused = false;
+        let allData = [];
+    
+        async function loadTraffic() {
+            try {
+                const res = await fetch('/api/traffic', {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+    
+                const data = await res.json();
+                if (data.length > 0) {
+                    allData = data;
+                    updateVisualization(data);
+                    updateSidebar(data);
+                }
+            } catch (err) {
+                console.error("Error fetching traffic:", err);
+            }
+        }
+    
+        function updateVisualization(data) {
+    
+            const filter = document.getElementById('protocolFilter').value;
+            const filteredData = filter === 'all'
+                ? data
+                : data.filter(d => d.protocol === filter);
+    
+            if (isPaused) {
+                globe.arcsData([]);
+                globe.ringsData([]);
+                return;
+            }
+    
+            // 🌍 Arcs (Nairobi ➜ Destination)
+            globe.arcsData(filteredData)
+    .arcStartLat(() => NAIROBI.lat)
+    .arcStartLng(() => NAIROBI.lng)
+    .arcEndLat(d => d.dst_lat)
+    .arcEndLng(d => d.dst_lon)
+    .arcColor(d => d.protocol === 'HTTP' ? '#ff9800' : '#00ff88')
+    .arcDashLength(0.4)
+    .arcDashGap(0.3)
+    .arcDashAnimateTime(2500)
+    .arcStroke(0.8)
+
+    // 🚀 Dynamic altitude based on distance
+    .arcAltitude(d => {
+        const latDiff = Math.abs(NAIROBI.lat - d.dst_lat);
+        const lngDiff = Math.abs(NAIROBI.lng - d.dst_lon);
+        const distanceFactor = (latDiff + lngDiff) / 180;
+        return 0.25 + distanceFactor * 0.6; 
+    });
+    
+            // 💥 Pulsing destination rings
+            globe.ringsData(filteredData)
+                .ringLat(d => d.dst_lat)
+                .ringLng(d => d.dst_lon)
+                .ringColor(() => 'rgba(0,255,136,0.6)')
+                .ringMaxRadius(2)
+                .ringPropagationSpeed(2)
+                .ringRepeatPeriod(2000);
+    
+            // 🔥 Glowing Nairobi origin
+            globe.pointsData([{
+                lat: NAIROBI.lat,
+                lng: NAIROBI.lng,
+                size: 1
+            }])
+                .pointLat(d => d.lat)
+                .pointLng(d => d.lng)
+                .pointAltitude(0.02)
+                .pointRadius(0.4)
+                .pointColor(() => '#ff0000')
+                .pointResolution(20);
+        }
+    
+        function updateSidebar(data) {
+            const list = document.getElementById('trafficList');
+    
+            const entriesHtml = data.map(d => `
+                <div class="traffic-entry">
+                    <p><strong>Destination:</strong> ${d.dst_ip}</p>
+                    <p><strong>Protocol:</strong> ${d.protocol}</p>
+                    <p><strong>Time:</strong> ${d.timestamp}</p>
+                </div>
+            `).join('');
+    
+            list.innerHTML = entriesHtml;
+        }
+    
+        function showInfo(arc) {
+            document.getElementById('info').innerHTML = `
+                <p><strong>Destination IP:</strong> ${arc.dst_ip}</p>
+                <p><strong>Protocol:</strong> ${arc.protocol}</p>
+                <p><strong>Timestamp:</strong> ${arc.timestamp}</p>
+            `;
+        }
+    
+        // Pause / Resume
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'Resume' : 'Pause';
+            updateVisualization(allData);
+        });
+    
+        document.getElementById('protocolFilter')
+            .addEventListener('change', () => updateVisualization(allData));
+    
+        // 🌍 Refresh every 20 seconds
+        setInterval(() => {
+            if (!isPaused) {
+                loadTraffic();
+            }
+        }, 20000);
+    
+        loadTraffic();
+    </script>
+    
+</body>
+</html>

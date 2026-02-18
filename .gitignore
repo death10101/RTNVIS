@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual env (if you create one)
+venv/
+
+# Local database
+traffic.db
+*.db
+
+# Secrets
+.env
